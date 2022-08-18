@@ -6,7 +6,7 @@ Example of application (data storage layer only) for a `User` domain-scoped serv
 
 ### Architecture:
 
-- `entity`
+- `model`
 data structures mapping to the database schema and other domain data, e.g. definition of user, custom errors, etc
 
 - `repository`
@@ -30,7 +30,7 @@ data mocking for each repository implementation, e.g. fake sql results
 ├── mock                   # mock definitions
 │   └── mysql              # by repository implementation
 │       └── user.go
-├── entity                 # domain/database entity definitions
+├── model                 # domain/database model definitions
 │   └── user.go
 └── repository             # repository interface
     ├── mysql              # and implementation

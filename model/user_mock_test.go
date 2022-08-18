@@ -1,35 +1,35 @@
-package mock
+package model_test
 
 import (
 	"regexp"
 
 	"github.com/DATA-DOG/go-sqlmock"
-	"github.com/mvrilo/go-example-repo-mock/entity"
+	"github.com/mvrilo/go-example-repo-mock/model"
 )
 
-type UserMysqlRepositoryMock struct {
+type UserMock struct {
 	sqlmock.Sqlmock
 }
 
-func NewUserMysqlRepositoryMock(mock sqlmock.Sqlmock) *UserMysqlRepositoryMock {
-	return &UserMysqlRepositoryMock{mock}
+func NewUserMock(mock sqlmock.Sqlmock) *UserMock {
+	return &UserMock{mock}
 }
 
-func (m *UserMysqlRepositoryMock) CreateUser(user *entity.User, id int64) {
+func (m *UserMock) CreateUser(user *model.User, id int64) {
 	m.
 		ExpectExec(regexp.QuoteMeta("INSERT INTO users (name) VALUES (?)")).
 		WithArgs(user.Name).
 		WillReturnResult(sqlmock.NewResult(id, 1))
 }
 
-func (m *UserMysqlRepositoryMock) CreateUserError(user *entity.User, err error) {
+func (m *UserMock) CreateUserError(user *model.User, err error) {
 	m.
 		ExpectExec(regexp.QuoteMeta("INSERT INTO users (name) VALUES (?)")).
 		WithArgs(user.Name).
 		WillReturnError(err)
 }
 
-func (m *UserMysqlRepositoryMock) GetUserByName(user *entity.User) {
+func (m *UserMock) GetUserByName(user *model.User) {
 	m.
 		ExpectQuery("SELECT id,name FROM users WHERE name = ?").
 		WithArgs(user.Name).
@@ -38,7 +38,7 @@ func (m *UserMysqlRepositoryMock) GetUserByName(user *entity.User) {
 		)
 }
 
-func (m *UserMysqlRepositoryMock) GetUserByNameError(user *entity.User, err error) {
+func (m *UserMock) GetUserByNameError(user *model.User, err error) {
 	m.
 		ExpectQuery("SELECT id,name FROM users WHERE name = ?").
 		WithArgs(user.Name).

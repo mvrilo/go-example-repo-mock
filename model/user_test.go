@@ -1,26 +1,20 @@
-package repository_test
+package model_test
 
 import (
-	"context"
 	"errors"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/jmoiron/sqlx"
+	"github.com/mvrilo/go-example-repo-mock/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/mvrilo/go-example-repo-mock/entity"
-	mock "github.com/mvrilo/go-example-repo-mock/mock/mysql"
-	"github.com/mvrilo/go-example-repo-mock/repository"
-	mysqlrepo "github.com/mvrilo/go-example-repo-mock/repository/mysql"
 )
 
 type UserRepositorySuite struct {
 	suite.Suite
-	db             *sqlx.DB
-	mock           *mock.UserMysqlRepositoryMock
-	userRepository repository.UserRepository
+	db   *sqlx.DB
+	mock *UserMock
 }
 
 // test constructor
@@ -28,9 +22,8 @@ func (s *UserRepositorySuite) SetupSuite() {
 	db, dbmock, err := sqlmock.New()
 	assert.Nil(s.T(), err)
 	dbx := sqlx.NewDb(db, "mysql")
+	s.mock = NewUserMock(dbmock)
 	s.db = dbx
-	s.mock = mock.NewUserMysqlRepositoryMock(dbmock)
-	s.userRepository = mysqlrepo.NewUserMysqlRepository(dbx)
 }
 
 func (s *UserRepositorySuite) AfterTest() {
@@ -40,7 +33,7 @@ func (s *UserRepositorySuite) AfterTest() {
 func (s *UserRepositorySuite) TestCreateUser() {
 	type testCase struct {
 		name    string
-		input   *entity.User
+		input   *model.User
 		err     error
 		prepare func(*testCase)
 	}
@@ -48,7 +41,7 @@ func (s *UserRepositorySuite) TestCreateUser() {
 	for _, tt := range []testCase{
 		{
 			name:  "happy path",
-			input: &entity.User{Name: "Bender"},
+			input: &model.User{Name: "Bender"},
 			err:   nil,
 			prepare: func(tt *testCase) {
 				s.mock.CreateUser(tt.input, int64(1))
@@ -56,7 +49,7 @@ func (s *UserRepositorySuite) TestCreateUser() {
 		},
 		{
 			name:  "query error",
-			input: &entity.User{Name: "Bender"},
+			input: &model.User{Name: "Bender"},
 			err:   errors.New("random error"),
 			prepare: func(tt *testCase) {
 				s.mock.CreateUserError(tt.input, tt.err)
@@ -66,7 +59,8 @@ func (s *UserRepositorySuite) TestCreateUser() {
 		s.Run(tt.name, func() {
 			tt.prepare(&tt)
 
-			err := s.userRepository.CreateUser(context.Background(), tt.input)
+			user := tt.input
+			err := user.CreateUser(s.db)
 			if err != nil {
 				assert.Error(s.T(), tt.err, err)
 				return
@@ -81,7 +75,7 @@ func (s *UserRepositorySuite) TestCreateUser() {
 func (s *UserRepositorySuite) TestGetUserByName() {
 	type testCase struct {
 		name    string
-		input   *entity.User
+		input   *model.User
 		err     error
 		prepare func(*testCase)
 	}
@@ -89,7 +83,7 @@ func (s *UserRepositorySuite) TestGetUserByName() {
 	for _, tt := range []*testCase{
 		{
 			name:  "happy path",
-			input: &entity.User{Name: "Bender"},
+			input: &model.User{Name: "Bender"},
 			err:   nil,
 			prepare: func(tt *testCase) {
 				s.mock.GetUserByName(tt.input)
@@ -97,15 +91,15 @@ func (s *UserRepositorySuite) TestGetUserByName() {
 		},
 		{
 			name:  "user not found error",
-			input: &entity.User{},
-			err:   entity.ErrUserNotFound,
+			input: &model.User{},
+			err:   model.ErrUserNotFound,
 			prepare: func(tt *testCase) {
 				s.mock.GetUserByNameError(tt.input, tt.err)
 			},
 		},
 		{
 			name:  "query error",
-			input: &entity.User{},
+			input: &model.User{},
 			err:   errors.New("random error"),
 			prepare: func(tt *testCase) {
 				s.mock.GetUserByNameError(tt.input, tt.err)
@@ -115,7 +109,8 @@ func (s *UserRepositorySuite) TestGetUserByName() {
 		s.Run(tt.name, func() {
 			tt.prepare(tt)
 
-			user, err := s.userRepository.GetUserByName(context.Background(), tt.input.Name)
+			user := &model.User{}
+			err := user.GetUserByName(s.db, tt.input.Name)
 			if err != nil {
 				assert.Error(s.T(), tt.err, err)
 				return
