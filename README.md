@@ -2,7 +2,9 @@
 
 [![CI](https://github.com/mvrilo/go-example-repo-mock/actions/workflows/ci.yaml/badge.svg)](https://github.com/mvrilo/go-example-repo-mock/actions/workflows/ci.yaml)
 
-Example of application (data storage layer only) for a `User` domain-scoped service using Go, repository pattern for data access, github actions for ci and tests using `testify/suite` and `go-sqlmock`.
+Example of application (data storage layer only) for a `User` domain-scoped service using Go, repository pattern for data access and mysql as its implementation, github actions for ci and unit tests using `testify/suite` and `go-sqlmock`.
+
+For a "model-only" package/architecture, head to [this branch](https://github.com/mvrilo/go-example-repo-mock/tree/model).
 
 ### Architecture:
 
