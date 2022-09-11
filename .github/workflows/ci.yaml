@@ -3,6 +3,8 @@ on: [push, pull_request]
 permissions:
   contents: read
 jobs:
+  strategy:
+    max-parallel: 1
   lint:
     runs-on: ubuntu-latest
     steps:
